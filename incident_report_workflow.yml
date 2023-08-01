@@ -1,0 +1,81 @@
+name: Generate Incident Report
+on:
+  schedule:
+    - cron: "45 15 * * *"
+
+jobs:
+  generate-report:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Fetch incident issues
+        run: |
+          owner="TeunTycho"
+          repo="Report"
+          label="incident"
+          url="https://api.github.com/repos/$owner/$repo/issues?labels=$label"
+          response=$(curl -s $url)
+          echo "$response" > issues.json
+
+      - name: Generate report
+        run: |
+          python - <<EOF
+          import json
+          import csv
+
+          with open('issues.json') as f:
+              issues = json.load(f)
+
+          with open('incident_report.csv', 'w', newline='', encoding='utf-8') as csvfile:
+              fieldnames = ['Issue Number', 'Title', 'URL', 'State', 'Labels', 'Assignees', 'Created Date', 'Author', 'Body', 'Comments', 'Milestone', 'Project', 'Repository']
+              writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+              writer.writeheader()
+
+              for issue in issues:
+                  issue_number = issue['number']
+                  title = issue['title']
+                  url = issue['html_url']
+                  state = issue['state']
+                  labels = ', '.join(label['name'] for label in issue['labels'])
+                  assignees = ', '.join(assignee['login'] for assignee in issue['assignees'])
+                  created_date = issue['created_at']
+                  author = issue['user']['login']
+                  body = issue['body']
+                  comments = issue['comments']
+                  milestone = issue['milestone']['title'] if issue['milestone'] else ''
+                  project = issue['project']['name'] if issue['project'] else ''
+                  repository = issue['repository']['full_name']
+
+                  writer.writerow({
+                      'Issue Number': issue_number,
+                      'Title': title,
+                      'URL': url,
+                      'State': state,
+                      'Labels': labels,
+                      'Assignees': assignees,
+                      'Created Date': created_date,
+                      'Author': author,
+                      'Body': body,
+                      'Comments': comments,
+                      'Milestone': milestone,
+                      'Project': project,
+                      'Repository': repository
+                  })
+          EOF
+
+      - name: Upload report as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: incident_report
+          path: incident_report.csv
