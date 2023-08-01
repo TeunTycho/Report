@@ -23,38 +23,11 @@ jobs:
 
       - name: Generate report
         run: |
-          node -e "
-            const fs = require('fs');
-            const issues = JSON.parse(fs.readFileSync('issues.json'));
-
-            const csvHeader = 'Issue Number,Title,URL,State,Labels,Assignees,Created Date,Author,Body,Comments,Milestone,Project,Repository';
-            let csvData = csvHeader;
-
-            for (const issue of issues) {
-              const issueNumber = issue.number;
-              const title = issue.title.replace(/"/g, '""');
-              const url = issue.html_url;
-              const state = issue.state;
-              const labels = issue.labels.map(label => label.name).join(', ').replace(/"/g, '""');
-              const assignees = issue.assignees.map(assignee => assignee.login).join(', ').replace(/"/g, '""');
-              const createdDate = issue.created_at;
-              const author = issue.user.login;
-              const body = issue.body.replace(/"/g, '""');
-              const comments = issue.comments;
-              const milestone = issue.milestone ? issue.milestone.title : '';
-              const project = issue.project ? issue.project.name : '';
-              const repository = issue.repository.full_name;
-
-              const rowData = `\n"${issueNumber}","${title}",${url},"${state}","${labels}","${assignees}","${createdDate}","${author}","${body}",${comments},"${milestone}","${project}","${repository}"`;
-              csvData += rowData;
-            }
-
-            fs.writeFileSync('incident_report.csv', csvData);
-          "
+          echo "Issue Number,Title,URL,State,Labels,Assignees,Created Date,Author,Body,Comments,Milestone,Project,Repository" > incident_report.csv
+          cat issues.json | jq -r '.[] | [.number, .title, .html_url, .state, (.labels | map(.name) | join(", ")), (.assignees | map(.login) | join(", ")), .created_at, .user.login, .body, .comments, (.milestone.title // ""), (.project.name // ""), .repository.full_name] | @csv' >> incident_report.csv
 
       - name: Upload report as artifact
         uses: actions/upload-artifact@v2
         with:
           name: incident_report
           path: incident_report.csv
-          
