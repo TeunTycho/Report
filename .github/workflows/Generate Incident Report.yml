@@ -1,0 +1,32 @@
+name: Generate Incident Report
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  generate-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Fetch incident issues
+        run: |
+          owner="TeunTycho"
+          repo="Report"
+          label="incident"
+          url="https://api.github.com/repos/$owner/$repo/issues?labels=$label"
+          response=$(curl -s $url)
+          echo "$response" > issues.json
+
+      - name: Generate report
+        run: |
+          jq '.[] | { "Issue Number": .number, "Title": .title, "URL": .html_url, "State": .state, "Labels": (.labels | map(.name) | join(", ")), "Assignees": (.assignees | map(.login) | join(", ")), "Created Date": .created_at, "Author": .user.login, "Body": .body, "Comments": .comments, "Milestone": (.milestone.title // ""), "Project": (.project.name // ""), "Repository": .repository.full_name }' issues.json > incident_report.json
+
+      - name: Upload report as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: incident_report
+          path: incident_report.json
