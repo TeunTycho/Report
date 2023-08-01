@@ -12,7 +12,7 @@ jobs:
   move-csv:
     runs-on: ubuntu-latest
     steps:
-      - name: incident_report
+      - name: Download incident_report.csv
         uses: actions/download-artifact@v2
         with:
           name: incident_report
@@ -20,20 +20,22 @@ jobs:
 
       - name: Clone security repository
         run: |
-          mkdir security
-          git clone https://github.com/TeunTycho/Security.git security
-          cp incident_report/incident_report.csv security/
+          mkdir security_repo
+          git clone https://github.com/TeunTycho/Security.git security_repo
+
+      - name: Move CSV to Security repo
+        run: |
+          mv incident_report/incident_report.csv security_repo/
 
       - name: Configure git
         run: |
-          cd security
+          cd security_repo
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
 
       - name: Commit and push to Security repo
         run: |
-          cd security
+          cd security_repo
           git add incident_report.csv
           git commit -m "Update incident report CSV"
           git push origin main
-
