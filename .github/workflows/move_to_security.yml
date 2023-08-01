@@ -13,38 +13,18 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Download incident_report.csv from Report repository
-        uses: actions/github-script@v4
-        with:
-          script: |
-            const fs = require('fs');
-            const { Octokit } = require('@octokit/core');
+        run: |
+          owner="TeunTycho"
+          repo="Report"
+          artifact_name="incident_report"
+          token="${{ secrets.REPORT_REPO_PAT }}"
 
-            const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+          artifact_url=$(curl -s -H "Authorization: token $token" "https://api.github.com/repos/$owner/$repo/actions/artifacts?name=$artifact_name" | jq -r '.artifacts[0].archive_download_url')
 
-            const { data } = await octokit.request('GET /repos/TeunTycho/Report/actions/artifacts', {
-              owner: 'TeunTycho',
-              repo: 'Report',
-              per_page: 1,
-              page: 1,
-            });
+          curl -s -L -H "Authorization: token $token" -o incident_report.zip "$artifact_url"
+          unzip -o incident_report.zip
+          rm incident_report.zip
 
-            const artifact_id = data.artifacts[0].id;
-            const download_url = data.artifacts[0].archive_download_url;
-
-            await octokit.request('GET /repos/TeunTycho/Report/actions/artifacts/:artifact_id/zip', {
-              owner: 'TeunTycho',
-              repo: 'Report',
-              artifact_id: artifact_id,
-              archive_format: 'zip',
-            })
-            .then(response => {
-              fs.writeFileSync('incident_report.zip', Buffer.from(response.data));
-            });
-
-            const unzip = require('unzipper');
-
-            fs.createReadStream('incident_report.zip')
-              .pipe(unzip.Extract({ path: 'incident_report' }));
       - name: Configure git
         run: |
           git config --global user.name "GitHub Actions"
