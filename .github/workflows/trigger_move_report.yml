@@ -1,4 +1,4 @@
-name: Move Incident Report
+nname: Move Incident Report
 
 on:
   workflow_dispatch:
@@ -10,7 +10,7 @@ jobs:
       - name: Trigger Move Report Workflow
         uses: peter-evans/repository-dispatch@v1
         with:
-          token: ${{ secrets.GH_TOKEN }}  # Replace 'GH_TOKEN' with the correct secret name
+          token: ${{ secrets.GH_TOKEN }}
           repository: TeunTycho/Report
           event-type: move_incident_report
           client-payload: '{}'
