@@ -1,17 +1,16 @@
-name: Trigger Move Incident Report
+name: Move Incident Report
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
-  trigger-move:
+  move_incident_report:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Move Report Workflow
+      - name: Trigger Repository Dispatch
         uses: peter-evans/repository-dispatch@v1
         with:
-          token: ${{ secrets.REPORT_REPO_PAT }}
+          token: ${{ secrets.GH_TOKEN }}
           repository: TeunTycho/Report
           event-type: move_incident_report
+          client-payload: {}
