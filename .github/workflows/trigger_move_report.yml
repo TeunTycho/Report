@@ -13,5 +13,5 @@ jobs:
         uses: peter-evans/repository-dispatch@v1
         with:
           token: ${{ secrets.REPORT_REPO_PAT }}
-          repository: TeunTycho/Security
+          repository: TeunTycho/Report
           event-type: move_incident_report
