@@ -13,4 +13,4 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}  # Replace 'GH_TOKEN' with the correct secret name
           repository: TeunTycho/Report
           event-type: move_incident_report
-          client-payload: {}
+          client-payload: '{}'
