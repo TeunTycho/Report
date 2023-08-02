@@ -7,10 +7,10 @@ jobs:
   move_incident_report:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Repository Dispatch
+      - name: Trigger Move Report Workflow
         uses: peter-evans/repository-dispatch@v1
         with:
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ secrets.GH_TOKEN }}  # Replace 'GH_TOKEN' with the correct secret name
           repository: TeunTycho/Report
           event-type: move_incident_report
           client-payload: {}
