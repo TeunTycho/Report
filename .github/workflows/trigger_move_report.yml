@@ -1,15 +1,25 @@
-name: Move Incident Report
+name: Upload to Google Drive
 
 on:
-  workflow_dispatch:
+  release:
+    types: [published]
 
 jobs:
-  move_incident_report:
+  upload:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Move Report Workflow
-        uses: peter-evans/repository-dispatch@v1
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Download artifact
+        run: |
+          # Replace the URL with the actual URL of your artifact
+          curl -LO https://github.com/TeunTycho/Report/suites/14734757435/artifacts/838540820
+
+      - name: Upload to Google Drive
+        uses: dawidd6/action-upload-to-drive@v2
         with:
-          token: ${{ secrets.GH_TOKEN }}  # Replace 'GH_TOKEN' with the correct secret name for the access token
-          repository: TeunTycho/Report
-          event-type: move_incident_report
+          file: 838540820  # Replace this with the actual filename of the downloaded artifact
+
+        env:
+          CREDENTIALS: ${{ secrets.GOOGLE_DRIVE_CREDENTIALS }}
