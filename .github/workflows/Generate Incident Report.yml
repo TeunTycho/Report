@@ -12,19 +12,29 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Fetch incident issues
+      - name: Fetch incident issues from Report repository
         run: |
           owner="TeunTycho"
           repo="Report"
           label="incident"
           url="https://api.github.com/repos/$owner/$repo/issues?labels=$label"
           response=$(curl -s $url)
-          echo "$response" > issues.json
+          echo "$response" > issues_report.json
+
+      - name: Fetch incident issues from DevOps repository
+        run: |
+          owner="TeunTycho"
+          repo="DevOps"
+          label="incident"
+          url="https://api.github.com/repos/$owner/$repo/issues?labels=$label"
+          response=$(curl -s $url)
+          echo "$response" > issues_devops.json
 
       - name: Generate report
         run: |
           echo "Issue Number,Title,URL,State,Labels,Assignees,Created Date,Author,Body,Comments,Milestone,Project,Repository" > incident_report.csv
-          cat issues.json | jq -r '.[] | [.number, .title, .html_url, .state, (.labels | map(.name) | join(", ")), (.assignees | map(.login) | join(", ")), .created_at, .user.login, .body, .comments, (.milestone.title // ""), (.project.name // ""), .repository.full_name] | @csv' >> incident_report.csv
+          cat issues_report.json | jq -r '.[] | [.number, .title, .html_url, .state, (.labels | map(.name) | join(", ")), (.assignees | map(.login) | join(", ")), .created_at, .user.login, .body, .comments, (.milestone.title // ""), (.project.name // ""), .repository.full_name] | @csv' >> incident_report.csv
+          cat issues_devops.json | jq -r '.[] | [.number, .title, .html_url, .state, (.labels | map(.name) | join(", ")), (.assignees | map(.login) | join(", ")), .created_at, .user.login, .body, .comments, (.milestone.title // ""), (.project.name // ""), .repository.full_name] | @csv' >> incident_report.csv
 
       - name: Upload report as artifact
         uses: actions/upload-artifact@v2
