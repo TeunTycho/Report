@@ -21,14 +21,12 @@ jobs:
           response=$(curl -s $url)
           echo "$response" > issues.json
 
-
-  - name: Generate report
+      - name: Generate report
         run: |
           echo "Issue Number,Title,URL,State,Labels,Assignees,Created Date,Author,Body,Comments,Milestone,Project,Repository" > incident_report.csv
           cat issues.json | jq -r '.[] | [.number, .title, .html_url, .state, (.labels | map(.name) | join(", ")), (.assignees | map(.login) | join(", ")), .created_at, .user.login, .body, .comments, (.milestone.title // ""), (.project.name // ""), .repository.full_name] | @csv' >> incident_report.csv
 
-  
-  - name: Upload report as artifact
+      - name: Upload report as artifact
         uses: actions/upload-artifact@v2
         with:
           name: incident_report
