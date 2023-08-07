@@ -17,7 +17,7 @@ jobs:
           owner="TeunTycho"
           repo="Report"
           label="incident"
-          url="https://api.github.com/repos/$owner/$repo/issues?labels=$label&state=all"
+          url="https://api.github.com/repos/$owner/$repo/issues?labels=$label"
           response=$(curl -s $url)
           echo "$response" > issues_report.json
 
@@ -26,7 +26,7 @@ jobs:
           owner="TeunTycho"
           repo="DevOps"
           label="incident"
-          url="https://api.github.com/repos/$owner/$repo/issues?labels=$label&state=all"
+          url="https://api.github.com/repos/$owner/$repo/issues?labels=$label"
           response=$(curl -s $url)
           echo "$response" > issues_devops.json
 
@@ -34,28 +34,10 @@ jobs:
         run: |
           cat issues_report.json issues_devops.json > combined_issues.json
 
-      - name: Fetch issue events for Report repository
-        run: |
-          issues=$(cat issues_report.json | jq -r '.[].number')
-          for issue in $issues; do
-            events_url="https://api.github.com/repos/TeunTycho/Report/issues/$issue/events"
-            events_response=$(curl -s $events_url)
-            echo "$events_response" > events_report_$issue.json
-          done
-
-      - name: Fetch issue events for DevOps repository
-        run: |
-          issues=$(cat issues_devops.json | jq -r '.[].number')
-          for issue in $issues; do
-            events_url="https://api.github.com/repos/YourDevOpsOwner/DevOps/issues/$issue/events"
-            events_response=$(curl -s $events_url)
-            echo "$events_response" > events_devops_$issue.json
-          done
-
       - name: Generate report
         run: |
-          echo "Issue Number,Title,URL,State,Labels,Assignees,Created Date,Author,Body,Comments,Milestone,Project,Repository,Close Date" > incident_report.csv
-          jq -r -n --slurpfile report 'combined_issues.json' --slurpfile report_events 'events_report_*.json' '.[0] + [.[1][] | select(.event == "closed") | {(.issue.number | tostring): .created_at}] | map(. as $issue | $report_events[0] | map(select(.issue.number == ($issue.number | tostring))) | map(.created_at | ($issue + { "Close Date": . }))) | add | map(. + ($report[0] | select(.number == ($issue.number | tonumber)) | del(.number)))' >> incident_report.csv
+          echo "Issue Number,Title,URL,State,Labels,Assignees,Created Date,Author,Body,Comments,Milestone,Project,Repository" > incident_report.csv
+          cat combined_issues.json | jq -r '.[] | [.number, .title, .html_url, .state, (.labels | map(.name) | join(", ")), (.assignees | map(.login) | join(", ")), .created_at, .user.login, .body, .comments, (.milestone.title // ""), (.project.name // ""), .repository.full_name] | @csv' >> incident_report.csv
 
       - name: Upload report as artifact
         uses: actions/upload-artifact@v2
