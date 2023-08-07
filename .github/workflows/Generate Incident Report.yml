@@ -21,10 +21,11 @@ jobs:
           response=$(curl -s $url)
           echo "$response" > issues.json
 
-    - name: Generate report
-    run: |
-      echo "Kanaal,Ticketnummer,Naam,E-mail,Onderwerp,Titel,Issue,Omschrijving,Oorzaak,Oplossing,Preventie,Doorlooptijd,Aanmaakdatum,Afsluitdatum,Issue Number,Title,URL,State,Labels,Assignees,Created Date,Author,Body,Comments,Milestone,Project,Repository" > incident_report.csv
-      cat issues.json | jq -r '.[] | [ "","","","","","","", "", "", "", "", "", "", "", .number, .title, .html_url, .state, (.labels | map(.name) | join(", ")), (.assignees | map(.login) | join(", ")), .created_at, .user.login, .body, .comments, (.milestone.title // ""), (.project.name // ""), .repository.full_name] | @csv' >> incident_report.csv
+
+  - name: Generate report
+        run: |
+          echo "Issue Number,Title,URL,State,Labels,Assignees,Created Date,Author,Body,Comments,Milestone,Project,Repository" > incident_report.csv
+          cat issues.json | jq -r '.[] | [.number, .title, .html_url, .state, (.labels | map(.name) | join(", ")), (.assignees | map(.login) | join(", ")), .created_at, .user.login, .body, .comments, (.milestone.title // ""), (.project.name // ""), .repository.full_name] | @csv' >> incident_report.csv
 
   
   - name: Upload report as artifact
