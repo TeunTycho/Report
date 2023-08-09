@@ -15,29 +15,24 @@ jobs:
       - name: Fetch incident issues from Report repository
         run: |
           owner="TeunTycho"
-          repo="Report"
+          repo1="Report"
+          repo2="ITSM"
           label="incident"
-          url="https://api.github.com/repos/$owner/$repo/issues?labels=$label"
-          response=$(curl -s $url)
-          echo "$response" > issues_report.json
-
-      - name: Fetch incident issues from DevOps repository
-        run: |
-          owner="TeunTycho"
-          repo="DevOps"
-          label="incident"
-          url="https://api.github.com/repos/$owner/$repo/issues?labels=$label"
-          response=$(curl -s $url)
-          echo "$response" > issues_devops.json
+          url1="https://api.github.com/repos/$owner/$repo1/issues?labels=$label"
+          url2="https://api.github.com/repos/$owner/$repo2/issues?labels=$label"
+          response1=$(curl -s $url1)
+          response2=$(curl -s $url2)
+          echo "$response1" > issues_report.json
+          echo "$response2" > issues_itsm.json
 
       - name: Combine issue data
         run: |
-          cat issues_report.json issues_devops.json > combined_issues.json
+          cat issues_report.json issues_itsm.json > combined_issues.json
 
       - name: Generate report
         run: |
-          echo "Issue Number,Title,URL,State,Labels,Assignees,Created Date,Author,Body,Comments,Milestone,Project,Repository" > incident_report.csv
-          cat combined_issues.json | jq -r '.[] | [.number, .title, .html_url, .state, (.labels | map(.name) | join(", ")), (.assignees | map(.login) | join(", ")), .created_at, .user.login, .body, .comments, (.milestone.title // ""), (.project.name // ""), .repository.full_name] | @csv' >> incident_report.csv
+          echo "Issue Number,Title,URL,State,Labels,Assignees,Created Date,Last Updated Date,Closed Date,Author,Body,Comments,Milestone,Project,Repository,Priority,Related Issues,Affected Systems,Resolution Details,Incident Category,Incident Owner,Time to Resolution,Incident Impact,Root Cause,Status Change History,Tags" > incident_report.csv
+          cat combined_issues.json | jq -r '.[] | [.number, .title, .html_url, .state, (.labels | map(.name) | join(", ")), (.assignees | map(.login) | join(", ")), .created_at, .updated_at, .closed_at, .user.login, .body, .comments, (.milestone.title // ""), (.project.name // ""), .repository.full_name, "","", "", "", "", "", "", "", ""] | @csv' >> incident_report.csv
 
       - name: Upload report as artifact
         uses: actions/upload-artifact@v2
