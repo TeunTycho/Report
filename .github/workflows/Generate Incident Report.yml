@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:  # Add this section to enable manual workflow runs
 
 jobs:
   generate-report:
