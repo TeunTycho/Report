@@ -4,10 +4,11 @@ on:
     - cron: "45 15 * * *"
   push:
     branches:
-      - main
+      - main  # Pas de naam van de tak aan om overeen te komen met jouw hoofdtak
 jobs:
   generate-report:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -60,8 +61,8 @@ jobs:
 
                   writer.writerow({
                       'Issue Number': issue_number,
-                      'Title': title,  # Hier hoort de titel te staan
-                      'URL': url,  # Hier hoort de URL te staan
+                      'Title': title,
+                      'URL': url,
                       'State': state,
                       'Labels': labels,
                       'Assignees': assignees,
