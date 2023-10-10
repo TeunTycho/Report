@@ -32,8 +32,8 @@ jobs:
 
       - name: Rapport genereren
         run: |
-          echo "Issue_Nummer,Titel,URL,Status,Labels,Toegewezenen,Aanmaakdatum,Laatst_bijgewerkt,Gesloten_datum,Auteur,Inhoud,Reacties,Mijlpaal,Project,Repository" > incidentenrapport.csv
-          cat gecombineerde_issues.json | jq -r '.[] | [.number, .title, .html_url, .state, (.labels | map(.name) | join(", ")), (.assignees | map(.login) | join(", ")), .created_at, .updated_at, .closed_at, .user.login, .body, .comments, (.milestone.title // ""), (.project.name // ""), (.html_url | split("/")[4] // "")] | @csv' >> incidentenrapport.csv
+          echo "Issue_Nummer,Titel,URL,Status,Labels,Toegewezenen,Aanmaakdatum,Laatst_bijgewerkt,Gesloten_datum,Auteur" > incidentenrapport.csv
+          cat gecombineerde_issues.json | jq -r '.[] | [.number, .title, .html_url, .state, (.labels | map(.name) | join(", ")), (.assignees | map(.login) | join(", ")), .created_at, .updated_at, .closed_at, .user.login] | @csv' >> incidentenrapport.csv
 
       - name: Rapport uploaden als artefact
         uses: actions/upload-artifact@v2
