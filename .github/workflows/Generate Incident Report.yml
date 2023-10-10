@@ -26,18 +26,25 @@ jobs:
           echo "$response1" > issues_report.json
           echo "$response2" > issues_itsm.json
 
-      - name: Issuegegevens samenvoegen
+      - name: Verkrijg de laatste reacties
         run: |
-          cat issues_report.json issues_itsm.json > gecombineerde_issues.json
+          owner="TeunTycho"
+          jq -c '.[]' issues_report.json | while read i; do
+            issue_number=$(echo $i | jq '.number')
+            comments_url=$(echo $i | jq -r '.comments_url')
+            if [[ $(echo $i | jq '.comments') -gt 0 ]]; then
+              last_comment=$(curl -s $comments_url | jq '.[-1].body')
+            else
+              last_comment=""
+            fi
+            echo $i | jq --arg comment "$last_comment" '. + {last_comment: $comment}' >> temp_issues.json
+          done
+          mv temp_issues.json combined_issues.json
 
       - name: Rapport genereren
         run: |
-          echo "Issue_Nummer,Titel,URL,Status,Labels,Toegewezenen,Aanmaakdatum,Laatst_bijgewerkt,Gesloten_datum,Auteur,Laatste_opmerking" > incidentenrapport.csv
-          jq -r '.[] | [.number, .title, .html_url, .state, (.labels | map(.name) | join(", ")), (.assignees | map(.login) | join(", ")), .created_at, .updated_at, .closed_at, .user.login] | @csv' gecombineerde_issues.json | while read line; do
-            issue_number=$(echo "$line" | cut -d',' -f1)
-            last_comment=$(curl -s "https://api.github.com/repos/$owner/$repo1/issues/$issue_number/comments" | jq -r '.[-1].body')
-            echo "$line,\"$last_comment\""
-          done >> incidentenrapport.csv
+          echo "Issue_Nummer,Titel,URL,Status,Labels,Toegewezenen,Aanmaakdatum,Laatst_bijgewerkt,Gesloten_datum,Auteur,Laatste_Reactie" > incidentenrapport.csv
+          cat combined_issues.json | jq -r '.[] | [.number, .title, .html_url, .state, (.labels | map(.name) | join(", ")), (.assignees | map(.login) | join(", ")), .created_at, .updated_at, .closed_at, .user.login, .last_comment] | @csv' >> incidentenrapport.csv
 
       - name: Rapport uploaden als artefact
         uses: actions/upload-artifact@v2
