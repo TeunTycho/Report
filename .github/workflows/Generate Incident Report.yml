@@ -63,8 +63,8 @@ jobs:
                       issue['user']['login'],
                       issue['body'],
                       issue['comments'],
-                      issue['milestone']['title'] if issue['milestone'] else '',
-                      issue['project']['name'] if issue['project'] else '',
+                      issue['milestone']['title'] if 'milestone' in issue else '',
+                      issue['project']['name'] if 'project' in issue else '',
                       issue['repository']['full_name']
                   ])
           EOF
@@ -93,8 +93,8 @@ jobs:
                       issue['user']['login'],
                       issue['body'],
                       issue['comments'],
-                      issue['milestone']['title'] if issue['milestone'] else '',
-                      issue['project']['name'] if issue['project'] else '',
+                      issue['milestone']['title'] if 'milestone' in issue else '',
+                      issue['project']['name'] if 'project' in issue else '',
                       issue['repository']['full_name']
                   ])
           EOF
