@@ -25,7 +25,7 @@ jobs:
         run: |
           owner="teuntycho"
           repo="itsm"
-          labels="bug,incident"
+          labels="incident"  # Removed "bug" label
           url="https://api.github.com/repos/$owner/$repo/issues?labels=$labels"
           response=$(curl -s $url)
           echo "$response" > itsm_issues.json
@@ -34,7 +34,7 @@ jobs:
         run: |
           owner="teuntycho"
           repo="devops"
-          labels="bug,incident"
+          labels="incident"  # Removed "bug" label
           url="https://api.github.com/repos/$owner/$repo/issues?labels=$labels"
           response=$(curl -s $url)
           echo "$response" > devops_issues.json
@@ -60,53 +60,4 @@ jobs:
                       ', '.join(label['name'] for label in issue['labels']),
                       ', '.join(assignee['login'] for assignee in issue['assignees']),
                       issue['created_at'],
-                      issue['user']['login'],
-                      issue['body'],
-                      issue['comments'],
-                      issue['milestone']['title'] if issue['milestone'] else '',
-                      issue['project']['name'] if issue['project'] else '',
-                      issue['repository']['full_name']
-                  ])
-          EOF
-
-      - name: Convert JSON to CSV (devops)
-        run: |
-          python - <<EOF
-          import json
-          import csv
-
-          with open('devops_issues.json') as json_file:
-              data = json.load(json_file)
-              
-          with open('devops_issues.csv', 'w', newline='', encoding='utf-8') as csv_file:
-              csv_writer = csv.writer(csv_file)
-              csv_writer.writerow(['Issue Number', 'Title', 'URL', 'State', 'Labels', 'Assignees', 'Created Date', 'Author', 'Body', 'Comments', 'Milestone', 'Project', 'Repository'])
-              for issue in data:
-                  csv_writer.writerow([
-                      issue['number'],
-                      issue['title'],
-                      issue['html_url'],
-                      issue['state'],
-                      ', '.join(label['name'] for label in issue['labels']),
-                      ', '.join(assignee['login'] for assignee in issue['assignees']),
-                      issue['created_at'],
-                      issue['user']['login'],
-                      issue['body'],
-                      issue['comments'],
-                      issue['milestone']['title'] if issue['milestone'] else '',
-                      issue['project']['name'] if issue['project'] else '',
-                      issue['repository']['full_name']
-                  ])
-          EOF
-
-      - name: Upload itsm issues CSV file as artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: itsm_issues
-          path: itsm_issues.csv
-
-      - name: Upload devops issues CSV file as artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: devops_issues
-          path: devops_issues.csv
+                      issue['user
