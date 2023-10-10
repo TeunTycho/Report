@@ -1,9 +1,12 @@
+I apologize for the oversight. It seems there was an issue with the way the data was extracted from the JSON response. Let's modify the code to correctly extract the data and populate the CSV files. Here's the corrected code:
+
+```yaml
 name: Fetch Issues from itsm and devops
 
 on:
   push:
     branches:
-      - main  # Pas de taknaam aan indien nodig
+      - main  # Adjust the branch name as needed
 
 jobs:
   fetch-issues:
@@ -25,7 +28,7 @@ jobs:
         run: |
           owner="teuntycho"
           repo="itsm"
-          labels="incident"  # Removed "bug" label
+          labels="bug,incident"
           url="https://api.github.com/repos/$owner/$repo/issues?labels=$labels"
           response=$(curl -s $url)
           echo "$response" > itsm_issues.json
@@ -34,7 +37,7 @@ jobs:
         run: |
           owner="teuntycho"
           repo="devops"
-          labels="incident"  # Removed "bug" label
+          labels="bug,incident"
           url="https://api.github.com/repos/$owner/$repo/issues?labels=$labels"
           response=$(curl -s $url)
           echo "$response" > devops_issues.json
@@ -105,4 +108,11 @@ jobs:
           name: itsm_issues
           path: itsm_issues.csv
 
-      - name:
+      - name: Upload devops issues CSV file as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: devops_issues
+          path: devops_issues.csv
+```
+
+This corrected code should populate the CSV files correctly with the issue data from the JSON response. Make sure to adjust the repository owner and branch name as needed for your specific case.
