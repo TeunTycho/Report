@@ -3,7 +3,7 @@ name: Fetch Issues from itsm and devops
 on:
   push:
     branches:
-      - main  # Adjust the branch name as needed
+      - main  # Pas de branchnaam aan indien nodig
 
 jobs:
   fetch-issues:
@@ -25,7 +25,7 @@ jobs:
         run: |
           owner="teuntycho"
           repo="itsm"
-          labels="bug,incident"
+          labels="incident"  # Alleen het label "incident" gebruiken
           url="https://api.github.com/repos/$owner/$repo/issues?labels=$labels"
           response=$(curl -s $url)
           echo "$response" > itsm_issues.json
@@ -33,7 +33,7 @@ jobs:
         run: |
           owner="teuntycho"
           repo="devops"
-          labels="bug,incident"
+          labels="incident"  # Alleen het label "incident" gebruiken
           url="https://api.github.com/repos/$owner/$repo/issues?labels=$labels"
           response=$(curl -s $url)
           echo "$response" > devops_issues.json
