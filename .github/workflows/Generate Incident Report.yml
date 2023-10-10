@@ -1,12 +1,12 @@
-name: Generate Incident Report
+name: Fetch Issues from itms and devops
+
 on:
-  schedule:
-    - cron: "45 15 * * *"
   push:
     branches:
-      - main  # Pas de naam van de tak aan om overeen te komen met jouw hoofdtak
+      - main  # Pas de taknaam aan indien nodig
+
 jobs:
-  generate-report:
+  fetch-issues:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,63 +21,32 @@ jobs:
       - name: Install dependencies
         run: pip install requests
 
-      - name: Fetch incident issues
+      - name: Fetch issues from itms
         run: |
-          owner="TeunTycho"
-          repo="Report"
-          label="incident"
-          url="https://api.github.com/repos/$owner/$repo/issues?labels=$label"
+          owner="forus"
+          repo="itms"
+          labels="bug,incident"
+          url="https://api.github.com/repos/$owner/$repo/issues?labels=$labels"
           response=$(curl -s $url)
-          echo "$response" > issues.json
+          echo "$response" > itms_issues.json
 
-      - name: Generate report
+      - name: Fetch issues from devops
         run: |
-          python - <<EOF
-          import json
-          import csv
+          owner="forus"
+          repo="devops"
+          labels="bug,incident"
+          url="https://api.github.com/repos/$owner/$repo/issues?labels=$labels"
+          response=$(curl -s $url)
+          echo "$response" > devops_issues.json
 
-          with open('issues.json') as f:
-              issues = json.load(f)
-
-          with open('incident_report.csv', 'w', newline='', encoding='utf-8') as csvfile:
-              fieldnames = ['Issue Number', 'Title', 'URL', 'State', 'Labels', 'Assignees', 'Created Date', 'Author', 'Body', 'Comments', 'Milestone', 'Project', 'Repository']
-              writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-              writer.writeheader()
-
-              for issue in issues:
-                  issue_number = issue['number']
-                  title = issue['title']
-                  url = issue['html_url']
-                  state = issue['state']
-                  labels = ', '.join(label['name'] for label in issue['labels'])
-                  assignees = ', '.join(assignee['login'] for assignee in issue['assignees'])
-                  created_date = issue['created_at']
-                  author = issue['user']['login']
-                  body = issue['body']
-                  comments = issue['comments']
-                  milestone = issue['milestone']['title'] if issue['milestone'] else ''
-                  project = issue['project']['name'] if issue['project'] else ''
-                  repository = issue['repository']['full_name']
-
-                  writer.writerow({
-                      'Issue Number': issue_number,
-                      'Title': title,
-                      'URL': url,
-                      'State': state,
-                      'Labels': labels,
-                      'Assignees': assignees,
-                      'Created Date': created_date,
-                      'Author': author,
-                      'Body': body,
-                      'Comments': comments,
-                      'Milestone': milestone,
-                      'Project': project,
-                      'Repository': repository
-                  })
-          EOF
-
-      - name: Upload report as artifact
+      - name: Upload itms issues as artifact
         uses: actions/upload-artifact@v2
         with:
-          name: incident_report
-          path: incident_report.csv
+          name: itms_issues
+          path: itms_issues.json
+
+      - name: Upload devops issues as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: devops_issues
+          path: devops_issues.json
