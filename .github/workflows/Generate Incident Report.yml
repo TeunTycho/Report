@@ -1,4 +1,4 @@
-name: Fetch Issues from itms and devops
+name: Fetch Issues from itsm and devops
 
 on:
   push:
@@ -19,16 +19,18 @@ jobs:
           python-version: '3.x'
 
       - name: Install dependencies
-        run: pip install requests
+        run: |
+          pip install requests
+          pip install pandas
 
-      - name: Fetch issues from itms
+      - name: Fetch issues from itsm
         run: |
           owner="teuntycho"
-          repo="itms"
+          repo="itsm"
           labels="bug,incident"
           url="https://api.github.com/repos/$owner/$repo/issues?labels=$labels"
           response=$(curl -s $url)
-          echo "$response" > itms_issues.json
+          echo "$response" > itsm_issues.json
 
       - name: Fetch issues from devops
         run: |
@@ -39,14 +41,40 @@ jobs:
           response=$(curl -s $url)
           echo "$response" > devops_issues.json
 
-      - name: Upload itms issues as artifact
+      - name: Convert JSON to Excel (itsm)
+        run: |
+          python - <<EOF
+          import json
+          import pandas as pd
+
+          with open('itsm_issues.json') as f:
+              issues = json.load(f)
+
+          df = pd.DataFrame(issues)
+          df.to_excel('itsm_issues.xlsx', index=False)
+          EOF
+
+      - name: Convert JSON to Excel (devops)
+        run: |
+          python - <<EOF
+          import json
+          import pandas as pd
+
+          with open('devops_issues.json') as f:
+              issues = json.load(f)
+
+          df = pd.DataFrame(issues)
+          df.to_excel('devops_issues.xlsx', index=False)
+          EOF
+
+      - name: Upload itsm issues Excel file as artifact
         uses: actions/upload-artifact@v2
         with:
-          name: itms_issues
-          path: itms_issues.json
+          name: itsm_issues
+          path: itsm_issues.xlsx
 
-      - name: Upload devops issues as artifact
+      - name: Upload devops issues Excel file as artifact
         uses: actions/upload-artifact@v2
         with:
           name: devops_issues
-          path: devops_issues.json
+          path: devops_issues.xlsx
