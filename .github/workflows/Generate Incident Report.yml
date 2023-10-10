@@ -28,11 +28,12 @@ jobs:
       - name: Combine issue data
         run: |
           cat issues_report.json issues_itsm.json > combined_issues.json
-      - name: Generate report
-        run: |
-          echo "Issue_Number,Title,URL,State,Labels,Assignees,Created_Date,Last_Updated_Date,Closed_Date,Author,Body,Comments,Milestone,Project,Repository,Priority,Related Issues,Affected Systems,Resolution Details,Incident Category,Incident Owner,Time to Resolution,Incident Impact,Root Cause,Status Change History,Tags" > incident_report.csv
-          cat combined_issues.json | jq -r '.[] | [.number, .title, .html_url, .state, (.labels | map(.name) | join(", ")), (.assignees | map(.login) | join(", ")), .created_at, .updated_at, .closed_at, .user.login, .body, .comments, (.milestone.title // ""), (.project.name // ""), .repository.full_name, "","", "", "", "", "", "", "", ""] | @csv' >> incident_report.csv
-      - name: Upload report as artifact
+     - name: Generate report
+  run: |
+    echo "Issue_Number,Title,URL,State,Labels,Assignees,Created_Date,Last_Updated_Date,Closed_Date,Author,Body,Comments,Milestone,Project,Repository,Priority,Related Issues,Affected Systems,Resolution Details,Incident Category,Incident Owner,Time to Resolution,Incident Impact,Root Cause,Status Change History,Tags" > incident_report.csv
+    cat combined_issues.json | jq -r '.[] | [.number, .title, .html_url, .state, (.labels | map(.name) | join(", ")), (.assignees | map(.login) | join(", ")), .created_at, .updated_at, .closed_at, .user.login, .body, .comments, (.milestone.title // ""), (.project.name // ""), (.repository.name // ""), "","", "", "", "", "", "", "", ""] | @csv' >> incident_report.csv
+
+   - name: Upload report as artifact
         uses: actions/upload-artifact@v2
         with:
           name: incident_report
