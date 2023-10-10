@@ -3,7 +3,7 @@ name: Fetch Issues from itsm and devops
 on:
   push:
     branches:
-      - main  # Pas de taknaam aan indien nodig
+      - main  # Adjust the branch name as needed
 
 jobs:
   fetch-issues:
@@ -19,9 +19,7 @@ jobs:
           python-version: '3.x'
 
       - name: Install dependencies
-        run: |
-          pip install requests
-          pip install pandas
+        run: pip install requests
 
       - name: Fetch issues from itsm
         run: |
@@ -41,40 +39,74 @@ jobs:
           response=$(curl -s $url)
           echo "$response" > devops_issues.json
 
-      - name: Convert JSON to Excel (itsm)
+      - name: Convert JSON to CSV (itsm)
         run: |
           python - <<EOF
           import json
-          import pandas as pd
+          import csv
 
-          with open('itsm_issues.json') as f:
-              issues = json.load(f)
-
-          df = pd.DataFrame(issues)
-          df.to_excel('itsm_issues.xlsx', index=False)
+          with open('itsm_issues.json') as json_file:
+              data = json.load(json_file)
+              
+          with open('itsm_issues.csv', 'w', newline='', encoding='utf-8') as csv_file:
+              csv_writer = csv.writer(csv_file)
+              csv_writer.writerow(['Issue Number', 'Title', 'URL', 'State', 'Labels', 'Assignees', 'Created Date', 'Author', 'Body', 'Comments', 'Milestone', 'Project', 'Repository'])
+              for issue in data:
+                  csv_writer.writerow([
+                      issue['number'],
+                      issue['title'],
+                      issue['html_url'],
+                      issue['state'],
+                      ', '.join(label['name'] for label in issue['labels']),
+                      ', '.join(assignee['login'] for assignee in issue['assignees']),
+                      issue['created_at'],
+                      issue['user']['login'],
+                      issue['body'],
+                      issue['comments'],
+                      issue['milestone']['title'] if issue['milestone'] else '',
+                      issue['project']['name'] if issue['project'] else '',
+                      issue['repository']['full_name']
+                  ])
           EOF
 
-      - name: Convert JSON to Excel (devops)
+      - name: Convert JSON to CSV (devops)
         run: |
           python - <<EOF
           import json
-          import pandas as pd
+          import csv
 
-          with open('devops_issues.json') as f:
-              issues = json.load(f)
-
-          df = pd.DataFrame(issues)
-          df.to_excel('devops_issues.xlsx', index=False)
+          with open('devops_issues.json') as json_file:
+              data = json.load(json_file)
+              
+          with open('devops_issues.csv', 'w', newline='', encoding='utf-8') as csv_file:
+              csv_writer = csv.writer(csv_file)
+              csv_writer.writerow(['Issue Number', 'Title', 'URL', 'State', 'Labels', 'Assignees', 'Created Date', 'Author', 'Body', 'Comments', 'Milestone', 'Project', 'Repository'])
+              for issue in data:
+                  csv_writer.writerow([
+                      issue['number'],
+                      issue['title'],
+                      issue['html_url'],
+                      issue['state'],
+                      ', '.join(label['name'] for label in issue['labels']),
+                      ', '.join(assignee['login'] for assignee in issue['assignees']),
+                      issue['created_at'],
+                      issue['user']['login'],
+                      issue['body'],
+                      issue['comments'],
+                      issue['milestone']['title'] if issue['milestone'] else '',
+                      issue['project']['name'] if issue['project'] else '',
+                      issue['repository']['full_name']
+                  ])
           EOF
 
-      - name: Upload itsm issues Excel file as artifact
+      - name: Upload itsm issues CSV file as artifact
         uses: actions/upload-artifact@v2
         with:
           name: itsm_issues
-          path: itsm_issues.xlsx
+          path: itsm_issues.csv
 
-      - name: Upload devops issues Excel file as artifact
+      - name: Upload devops issues CSV file as artifact
         uses: actions/upload-artifact@v2
         with:
           name: devops_issues
-          path: devops_issues.xlsx
+          path: devops_issues.csv
