@@ -1,4 +1,4 @@
-name: Fetch Issues from itsm and devops
+name: Fetch Issues fromb itsm and devops
 
 on:
   push:
