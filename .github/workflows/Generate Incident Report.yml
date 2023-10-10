@@ -25,26 +25,23 @@ jobs:
         run: |
           owner="teuntycho"
           repo="itsm"
-          labels="incident"
+          labels="bug,incident"
           url="https://api.github.com/repos/$owner/$repo/issues?labels=$labels"
           response=$(curl -s $url)
           echo "$response" > itsm_issues.json
-
       - name: Fetch issues from devops
         run: |
           owner="teuntycho"
           repo="devops"
-          labels="incident"
+          labels="bug,incident"
           url="https://api.github.com/repos/$owner/$repo/issues?labels=$labels"
           response=$(curl -s $url)
           echo "$response" > devops_issues.json
-
       - name: Convert JSON to CSV (itsm)
         run: |
           python - <<EOF
           import json
           import csv
-
           with open('itsm_issues.json') as json_file:
               data = json.load(json_file)
               
@@ -68,13 +65,11 @@ jobs:
                       issue['repository']['full_name']
                   ])
           EOF
-
       - name: Convert JSON to CSV (devops)
         run: |
           python - <<EOF
           import json
           import csv
-
           with open('devops_issues.json') as json_file:
               data = json.load(json_file)
               
@@ -98,7 +93,6 @@ jobs:
                       issue['repository']['full_name']
                   ])
           EOF
-
       - name: Upload itsm issues CSV file as artifact
         uses: actions/upload-artifact@v2
         with:
