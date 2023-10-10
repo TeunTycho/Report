@@ -3,7 +3,7 @@ name: Fetch Issues from itsm and devops
 on:
   push:
     branches:
-      - main  # Adjust the branch name as needed
+      - main  # Pas de taknaam aan indien nodig
 
 jobs:
   fetch-issues:
@@ -60,4 +60,49 @@ jobs:
                       ', '.join(label['name'] for label in issue['labels']),
                       ', '.join(assignee['login'] for assignee in issue['assignees']),
                       issue['created_at'],
-                      issue['user
+                      issue['user']['login'],
+                      issue['body'],
+                      issue['comments'],
+                      issue['milestone']['title'] if issue['milestone'] else '',
+                      issue['project']['name'] if issue['project'] else '',
+                      issue['repository']['full_name']
+                  ])
+          EOF
+
+      - name: Convert JSON to CSV (devops)
+        run: |
+          python - <<EOF
+          import json
+          import csv
+
+          with open('devops_issues.json') as json_file:
+              data = json.load(json_file)
+              
+          with open('devops_issues.csv', 'w', newline='', encoding='utf-8') as csv_file:
+              csv_writer = csv.writer(csv_file)
+              csv_writer.writerow(['Issue Number', 'Title', 'URL', 'State', 'Labels', 'Assignees', 'Created Date', 'Author', 'Body', 'Comments', 'Milestone', 'Project', 'Repository'])
+              for issue in data:
+                  csv_writer.writerow([
+                      issue['number'],
+                      issue['title'],
+                      issue['html_url'],
+                      issue['state'],
+                      ', '.join(label['name'] for label in issue['labels']),
+                      ', '.join(assignee['login'] for assignee in issue['assignees']),
+                      issue['created_at'],
+                      issue['user']['login'],
+                      issue['body'],
+                      issue['comments'],
+                      issue['milestone']['title'] if issue['milestone'] else '',
+                      issue['project']['name'] if issue['project'] else '',
+                      issue['repository']['full_name']
+                  ])
+          EOF
+
+      - name: Upload itsm issues CSV file as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: itsm_issues
+          path: itsm_issues.csv
+
+      - name:
