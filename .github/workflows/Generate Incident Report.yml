@@ -23,7 +23,7 @@ jobs:
 
       - name: Fetch issues from itms
         run: |
-          owner="forus"
+          owner="teuntycho"
           repo="itms"
           labels="bug,incident"
           url="https://api.github.com/repos/$owner/$repo/issues?labels=$labels"
@@ -32,7 +32,7 @@ jobs:
 
       - name: Fetch issues from devops
         run: |
-          owner="forus"
+          owner="teuntycho"
           repo="devops"
           labels="bug,incident"
           url="https://api.github.com/repos/$owner/$repo/issues?labels=$labels"
