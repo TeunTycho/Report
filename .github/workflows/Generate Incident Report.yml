@@ -64,7 +64,7 @@ jobs:
                       issue['body'],
                       issue['comments'],
                       issue['milestone']['title'] if 'milestone' in issue else '',
-                      issue['project']['name'] if 'project' in issue else '',
+                      issue['project']['name'] if 'project' in issue else '',  # Check if 'project' exists
                       issue['repository']['full_name']
                   ])
           EOF
@@ -94,7 +94,7 @@ jobs:
                       issue['body'],
                       issue['comments'],
                       issue['milestone']['title'] if 'milestone' in issue else '',
-                      issue['project']['name'] if 'project' in issue else '',
+                      issue['project']['name'] if 'project' in issue else '',  # Check if 'project' exists
                       issue['repository']['full_name']
                   ])
           EOF
