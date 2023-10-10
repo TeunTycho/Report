@@ -47,10 +47,10 @@ jobs:
               
           with open('itsm_issues.csv', 'w', newline='', encoding='utf-8') as csv_file:
               csv_writer = csv.writer(csv_file)
-              csv_writer.writerow(['Number', 'Title', 'URL', 'State', 'Labels', 'Assignees', 'Created Date', 'Author', 'Body', 'Comments', 'Milestone', 'Project', 'Repository'])
+              csv_writer.writerow(['Title', 'URL', 'State', 'Labels', 'Assignees', 'Created Date', 'Author', 'Body', 'Comments', 'Milestone', 'Project', 'Repository'])
               for issue in data:
                   csv_writer.writerow([
-                      issue['issue number'],
+                
                       issue['title'],
                       issue['html_url'],
                       issue['state'],
